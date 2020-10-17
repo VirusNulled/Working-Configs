@@ -1,0 +1,165 @@
+[SETTINGS]
+{
+  "Name": "Crunchyroll New",
+  "SuggestedBots": 1,
+  "MaxCPM": 0,
+  "LastModified": "2020-04-06T21:51:35.8133543-03:00",
+  "AdditionalInfo": "",
+  "Author": "",
+  "Version": "1.4.1 [Anomaly]",
+  "LoliSave": false,
+  "IgnoreResponseErrors": false,
+  "MaxRedirects": 8,
+  "NeedsProxies": false,
+  "OnlySocks": false,
+  "OnlySsl": false,
+  "MaxProxyUses": 0,
+  "EncodeData": false,
+  "AllowedWordlist1": "",
+  "AllowedWordlist2": "",
+  "DataRules": [],
+  "CustomInputs": [],
+  "CaptchaUrl": "",
+  "Base64": "",
+  "Grayscale": false,
+  "RemoveLines": false,
+  "RemoveNoise": false,
+  "Dilate": false,
+  "Threshold": 1.0,
+  "DiffKeep": 0.0,
+  "DiffHide": 0.0,
+  "Saturate": false,
+  "Saturation": 0.0,
+  "Transparent": false,
+  "OnlyShow": false,
+  "ContrastGamma": false,
+  "Contrast": 1.0,
+  "Gamma": 1.0,
+  "Brightness": 1.0,
+  "RemoveLinesMin": 0,
+  "RemoveLinesMax": 0,
+  "ForceHeadless": false,
+  "AlwaysOpen": false,
+  "AlwaysQuit": false,
+  "DisableNotifications": false,
+  "CustomUserAgent": "",
+  "RandomUA": false,
+  "CustomCMDArgs": ""
+}
+
+[SCRIPT]
+#TOKEN FUNCTION Constant "WveH9VkPLrXvuNm" -> VAR "TOKEN" 
+
+#DEVICEID FUNCTION RandomGUID -> VAR "DEVICEID" 
+
+#USERENCODE FUNCTION URLEncode "<USER>" -> VAR "USERENCODE" 
+
+#PASSENCODE FUNCTION URLEncode "<PASS>" -> VAR "PASSENCODE" 
+
+#VALIDATE REQUEST GET "https://api.crunchyroll.com/list_locales.1.json?locale=&device_id=<DEVICEID>&device_type=com.crunchyroll.crunchyroid&access_token=<TOKEN>&version=457 " 
+  
+  HEADER "X-Android-Application-Version-Name: 2.6.0" 
+  HEADER "X-Android-Device-Manufacturer: samsung" 
+  HEADER "X-Android-SDK: 22" 
+  HEADER "Using-Brightcove-Player: 1" 
+  HEADER "X-Android-Application-Version-Code: 457" 
+  HEADER "X-Android-Release: 5.1.1" 
+  HEADER "X-Android-Device-Product: dreamqltevl" 
+  HEADER "X-Android-Device-Model: SM-G930L" 
+  HEADER "X-Android-Device-Is-GoogleTV: 0" 
+  HEADER "User-Agent: Dalvik/2.1.0 (Linux; U; Android 5.1.1; SM-G930L Build/NRD90M)" 
+  HEADER "Host: api.crunchyroll.com" 
+  HEADER "Connection: Keep-Alive" 
+  HEADER "Accept-Encoding: gzip" 
+
+KEYCHECK BanOnToCheck=FALSE 
+  KEYCHAIN Ban OR 
+    KEY "<SOURCE>" DoesNotContain ",\"code\":\"ok\"}" 
+
+#SESSION REQUEST POST "https://api.crunchyroll.com/start_session.1.json" 
+  CONTENT "locale=&device_id=<DEVICEID>&device_type=com.crunchyroll.crunchyroid&access_token=<TOKEN>&version=457" 
+  CONTENTTYPE "application/x-www-form-urlencoded" 
+  HEADER "User-Agent: Dalvik/2.1.0 (Linux; U; Android 5.1.1; SM-G930L Build/NRD90M)" 
+  HEADER "Pragma: no-cache" 
+  HEADER "Accept: */*" 
+  HEADER "X-Android-Application-Version-Name: 2.6.0" 
+  HEADER "X-Android-Device-Manufacturer: samsung" 
+  HEADER "X-Android-SDK: 22" 
+  HEADER "Using-Brightcove-Player: 1" 
+  HEADER "X-Android-Application-Version-Code: 457" 
+  HEADER "X-Android-Release: 5.1.1" 
+  HEADER "X-Android-Device-Product: dreamqltevl" 
+  HEADER "X-Android-Device-Model: SM-G930L" 
+  HEADER "X-Android-Device-Is-GoogleTV: 0" 
+  HEADER "Host: api.crunchyroll.com" 
+  HEADER "Connection: Keep-Alive" 
+  HEADER "Accept-Encoding: gzip" 
+  HEADER "Content-Type: application/x-www-form-urlencoded" 
+
+#SESSIONID PARSE "<SOURCE>" JSON "session_id" -> VAR "SESSIONID" 
+
+#LOGIN REQUEST POST "https://api.crunchyroll.com/login.2.json " 
+  CONTENT "account=<USERENCODE>&password=<PASSENCODE>&locale=enUS&session_id=<SESSIONID>" 
+  CONTENTTYPE "application/x-www-form-urlencoded" 
+  HEADER "X-Android-Application-Version-Name: 2.6.0" 
+  HEADER "X-Android-Device-Manufacturer: samsung" 
+  HEADER "X-Android-SDK: 22" 
+  HEADER "Using-Brightcove-Player: 1" 
+  HEADER "X-Android-Application-Version-Code: 457" 
+  HEADER "X-Android-Release: 5.1.1" 
+  HEADER "X-Android-Device-Product: dreamqltevl" 
+  HEADER "X-Android-Device-Model: SM-G930L" 
+  HEADER "X-Android-Device-Is-GoogleTV: 0" 
+  HEADER "User-Agent: Dalvik/2.1.0 (Linux; U; Android 5.1.1; SM-G930L Build/NRD90M)" 
+  HEADER "Host: api.crunchyroll.com" 
+  HEADER "Connection: Keep-Alive" 
+  HEADER "Accept-Encoding: gzip" 
+  HEADER "Content-Type: application/x-www-form-urlencoded" 
+
+KEYCHECK 
+  KEYCHAIN Failure OR 
+    KEY "Incorrect login information" 
+    KEY "bad_request" 
+  KEYCHAIN Success OR 
+    KEY "user_id" 
+  KEYCHAIN Ban OR 
+    KEY "You are being rate limited" 
+    KEY "Access denied" 
+    KEY "Ray ID" 
+    KEY "Event ID" 
+
+#USERNAME PARSE "<SOURCE>" JSON "username" -> CAP "username" 
+
+IF "<SOURCE>" contains "\"username\":null"
+
+FUNCTION Constant "<USER>" -> VAR "username" 
+
+ENDIF
+
+#PREMIUM PARSE "<SOURCE>" JSON "premium" -> CAP "premium" 
+
+#ACCESSTYPE PARSE "<SOURCE>" JSON "access_type" -> CAP "subscription" 
+
+KEYCHECK BanOnToCheck=FALSE 
+  KEYCHAIN Custom "FREE" OR 
+    KEY "access_type\":null" 
+
+!#LOGIN REQUEST GET "https://www.crunchyroll.com/acct/membership" 
+!  
+!  HEADER "User-Agent: Dalvik/2.1.0 (Linux; U; Android 5.1.1; Nexus 6 Build/LYZ28N)" 
+!  HEADER "Pragma: no-cache" 
+!  HEADER "Accept: */*" 
+!  HEADER "X-Android-Application-Version-Name: 2.5.1" 
+!  HEADER "X-Android-Device-Manufacturer: samsung" 
+!  HEADER "X-Android-SDK: 22" 
+!  HEADER "Using-Brightcove-Player: 1" 
+!  HEADER "X-Android-Application-Version-Code: 455" 
+!  HEADER "X-Android-Release: 5.1.1" 
+!  HEADER "X-Android-Device-Product: heroltektt" 
+!  HEADER "X-Android-Device-Model: SM-G930K" 
+!  HEADER "X-Android-Device-Is-GoogleTV: 0" 
+
+!PARSE "<SOURCE>" LR "<th>Ciclo de Facturación:</th>" "</td>" -> VAR "fact" 
+
+!PARSE "<fact>" LR "<td>" "" -> CAP "" 
+

